@@ -10,14 +10,27 @@ export default function HomePage() {
     <>
       <HeroBanner />
 
-      {/* Categories */}
-      <section className="py-8 border-b border-gray-100">
+      <FeaturedSpots />
+
+      {/* Map with filter */}
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <CategoryFilter />
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Mapa Interativo
+              </h2>
+              <p className="mt-2 text-gray-500">
+                Filtre por categoria e encontre pontos turísticos próximos a você
+              </p>
+            </div>
+          </div>
+          <div className="mb-4">
+            <CategoryFilter />
+          </div>
         </div>
       </section>
 
-      <FeaturedSpots />
       <MapSection />
       <AboutCity />
       <EventsSection />
