@@ -1,12 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogIn, Eye, EyeOff, Compass } from 'lucide-react';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,12 +31,14 @@ export default function LoginPage() {
         return;
       }
 
-      // Redireciona admin para /admin, outros para home
-      if (data.user?.role === 'admin' || data.user?.role === 'moderator') {
-        window.location.href = '/admin';
-      } else {
-        window.location.href = '/';
-      }
+      // Aguarda cookie ser setado e redireciona com reload completo
+      setTimeout(() => {
+        if (data.user?.role === 'admin' || data.user?.role === 'moderator') {
+          window.location.replace('/admin');
+        } else {
+          window.location.replace('/');
+        }
+      }, 100);
     } catch {
       setError('Erro de conexão. Tente novamente.');
       setLoading(false);

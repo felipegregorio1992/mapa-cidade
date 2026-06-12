@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Menu, X, MapPin, Search, Heart, User, Compass, LogIn, LogOut } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
@@ -18,7 +17,6 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     // Verifica se o usuário está logado
@@ -35,9 +33,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
-    setUserMenuOpen(false);
-    router.refresh();
+    window.location.replace('/');
   };
 
   return (
