@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import {
   MapPin,
   Clock,
@@ -12,19 +12,48 @@ import {
   Navigation,
   Calendar,
   ArrowLeft,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { touristSpots } from '@/data/spots';
 import { categoryLabels, categoryColors } from '@/data/spots';
 import { useStore } from '@/store/useStore';
+import { TouristSpot } from '@/types';
 
 const MapView = dynamic(() => import('@/components/map/MapView'), { ssr: false });
 
 export default function LocalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const spot = touristSpots.find((s) => s.id === id);
-  const { favorites, toggleFavorite } = useStore();
+  const { spots, favorites, toggleFavorite, isLoading } = useStore();
+  const [spot, setSpot] = useState<TouristSpot | null | undefined>(undefined);
+
+  useEffect(() => {
+    // Espera o store carregar antes de buscar
+    if (isLoading) return;
+
+    // Tenta achar no store primeiro
+    const found = spots.find((s) => s.id === id || (s as unknown as {_id: string})._id === id);
+    if (found) {
+      setSpot(found);
+    } else {
+      // Busca da API individual
+      fetch(`/api/spots/${id}`)
+        .then((r) => {
+          if (r.ok) return r.json();
+          return null;
+        })
+        .then((data) => setSpot(data))
+        .catch(() => setSpot(null));
+    }
+  }, [id, spots, isLoading]);
+
+  if (spot === undefined) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+      </div>
+    );
+  }
 
   if (!spot) {
     return (
@@ -38,7 +67,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
     );
   }
 
-  const isFavorite = favorites.includes(spot.id);
+  const isFavorite = favorites.includes(spot.id || (spot as unknown as {_id: string})._id);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -58,7 +87,11 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
         <div className="lg:col-span-2 space-y-6">
           {/* Hero Image */}
           <div className="relative h-64 sm:h-80 bg-gradient-to-br from-teal-100 to-emerald-50 rounded-2xl overflow-hidden flex items-center justify-center">
-            <MapPin className="w-20 h-20 text-teal-200" />
+            {spot.images && spot.images.length > 0 && spot.images[0] ? (
+              <img src={spot.images[0]} alt={spot.name} className="absolute inset-0 w-full h-full object-cover" />
+            ) : (
+              <MapPin className="w-20 h-20 text-teal-200" />
+            )}
             <div
               className="absolute top-4 left-4 px-3 py-1.5 text-xs font-medium text-white rounded-full"
               style={{ backgroundColor: categoryColors[spot.category] }}
@@ -104,6 +137,20 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
               </button>
             </div>
           </div>
+
+          {/* Photo Gallery */}
+          {spot.images && spot.images.length > 1 && (
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">Fotos</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {spot.images.map((img, i) => (
+                  <div key={i} className="aspect-video rounded-xl overflow-hidden border border-gray-200">
+                    <img src={img} alt={`${spot.name} - Foto ${i + 1}`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           <div className="prose prose-gray max-w-none">
@@ -196,13 +243,13 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
           <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
             <h3 className="font-semibold text-gray-900 mb-4">Locais Similares</h3>
             <div className="space-y-3">
-              {touristSpots
+              {spots
                 .filter((s) => s.category === spot.category && s.id !== spot.id && s.status === 'active')
                 .slice(0, 3)
                 .map((related) => (
                   <Link
-                    key={related.id}
-                    href={`/local/${related.id}`}
+                    key={related.id || (related as unknown as {_id: string})._id}
+                    href={`/local/${related.id || (related as unknown as {_id: string})._id}`}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center shrink-0">

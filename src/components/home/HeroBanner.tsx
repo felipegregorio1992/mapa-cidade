@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { useStore } from '@/store/useStore';
 
 export default function HeroBanner() {
-  const { setSearchQuery } = useStore();
+  const { setSearchQuery, spots } = useStore();
+
+  const activeSpots = spots.filter((s) => s.status === 'active');
+  const totalSpots = activeSpots.length;
+  const categories = new Set(activeSpots.map((s) => s.category)).size;
+  const avgRating = totalSpots > 0
+    ? (activeSpots.reduce((acc, s) => acc + (s.rating || 0), 0) / totalSpots).toFixed(1)
+    : '0';
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-800 text-white">
@@ -57,15 +64,15 @@ export default function HeroBanner() {
           {/* Stats */}
           <div className="mt-10 flex flex-wrap gap-8">
             <div>
-              <p className="text-3xl font-bold">12+</p>
+              <p className="text-3xl font-bold">{totalSpots}</p>
               <p className="text-sm text-teal-200">Pontos Turísticos</p>
             </div>
             <div>
-              <p className="text-3xl font-bold">9</p>
+              <p className="text-3xl font-bold">{categories}</p>
               <p className="text-sm text-teal-200">Categorias</p>
             </div>
             <div>
-              <p className="text-3xl font-bold">4.6</p>
+              <p className="text-3xl font-bold">{avgRating}</p>
               <p className="text-sm text-teal-200">Avaliação Média</p>
             </div>
             <div>
@@ -76,43 +83,40 @@ export default function HeroBanner() {
         </div>
 
         {/* Floating card */}
+        {activeSpots.length > 0 && (
         <div className="hidden lg:block absolute top-20 right-8 xl:right-16">
           <div className="w-64 bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-2xl">
             <div className="flex items-center gap-2 mb-3">
               <MapPin className="w-5 h-5 text-emerald-300" />
-              <span className="text-sm font-medium">Próximo a você</span>
+              <span className="text-sm font-medium">Destaques</span>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 p-2 bg-white/10 rounded-lg">
-                <div className="w-8 h-8 bg-cyan-400/30 rounded-lg flex items-center justify-center">
-                  <span className="text-xs">🏖️</span>
+              {activeSpots.filter((s) => s.featured).slice(0, 3).map((spot) => (
+                <div key={spot.id || (spot as unknown as {_id:string})._id} className="flex items-center gap-2 p-2 bg-white/10 rounded-lg">
+                  <div className="w-8 h-8 bg-cyan-400/30 rounded-lg flex items-center justify-center">
+                    <span className="text-xs">📍</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium">{spot.name}</p>
+                    <p className="text-[10px] text-teal-200">⭐ {spot.rating}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium">Praia de Itaipuaçu</p>
-                  <p className="text-[10px] text-teal-200">0.5 km</p>
+              ))}
+              {activeSpots.filter((s) => s.featured).length === 0 && activeSpots.slice(0, 3).map((spot) => (
+                <div key={spot.id || (spot as unknown as {_id:string})._id} className="flex items-center gap-2 p-2 bg-white/10 rounded-lg">
+                  <div className="w-8 h-8 bg-cyan-400/30 rounded-lg flex items-center justify-center">
+                    <span className="text-xs">📍</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium">{spot.name}</p>
+                    <p className="text-[10px] text-teal-200">⭐ {spot.rating}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2 p-2 bg-white/10 rounded-lg">
-                <div className="w-8 h-8 bg-green-400/30 rounded-lg flex items-center justify-center">
-                  <span className="text-xs">🏔️</span>
-                </div>
-                <div>
-                  <p className="text-xs font-medium">Pedra do Elefante</p>
-                  <p className="text-[10px] text-teal-200">2.1 km</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-2 bg-white/10 rounded-lg">
-                <div className="w-8 h-8 bg-blue-400/30 rounded-lg flex items-center justify-center">
-                  <span className="text-xs">🌊</span>
-                </div>
-                <div>
-                  <p className="text-xs font-medium">Lagoa de Maricá</p>
-                  <p className="text-[10px] text-teal-200">3.5 km</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
+        )}
       </div>
     </section>
   );

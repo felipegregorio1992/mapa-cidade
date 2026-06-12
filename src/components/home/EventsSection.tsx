@@ -1,12 +1,24 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { CalendarDays, MapPin, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { events } from '@/data/spots';
 import { categoryLabels, categoryColors } from '@/data/spots';
+import { Event } from '@/types';
 
 export default function EventsSection() {
+  const [events, setEvents] = useState<Event[]>([]);
+
+  useEffect(() => {
+    fetch('/api/events')
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setEvents(data); })
+      .catch(() => {});
+  }, []);
+
   const upcomingEvents = events.slice(0, 3);
+
+  if (upcomingEvents.length === 0) return null;
 
   return (
     <section className="py-16 bg-gray-50/50">

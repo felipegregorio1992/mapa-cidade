@@ -131,7 +131,7 @@ export default function MapView({
         <UserLocationMarker />
         {spots.map((spot) => (
           <Marker
-            key={spot.id}
+            key={spot.id || (spot as unknown as { _id: string })._id}
             position={[spot.latitude, spot.longitude]}
             icon={createCategoryIcon(spot.category)}
           >
@@ -144,7 +144,7 @@ export default function MapView({
                 <p className="text-xs text-gray-400 mt-1 line-clamp-2">{spot.description}</p>
                 <div className="mt-2 flex gap-2">
                   <Link
-                    href={`/local/${spot.id}`}
+                    href={`/local/${spot.id || (spot as unknown as { _id: string })._id}`}
                     className="text-xs text-teal-600 hover:text-teal-800 font-medium flex items-center gap-1"
                   >
                     <ExternalLink className="w-3 h-3" />

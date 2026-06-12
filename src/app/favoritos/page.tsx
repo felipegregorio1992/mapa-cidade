@@ -4,11 +4,10 @@ import { Heart } from 'lucide-react';
 import Link from 'next/link';
 import SpotCard from '@/components/ui/SpotCard';
 import { useStore } from '@/store/useStore';
-import { touristSpots } from '@/data/spots';
 
 export default function FavoritosPage() {
-  const { favorites } = useStore();
-  const favoriteSpots = touristSpots.filter((s) => favorites.includes(s.id));
+  const { favorites, spots } = useStore();
+  const favoriteSpots = spots.filter((s) => favorites.includes(s.id || (s as unknown as {_id: string})._id));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -1,10 +1,21 @@
 'use client';
 
-import { CalendarDays, MapPin, Clock } from 'lucide-react';
-import { events } from '@/data/spots';
+import { useEffect, useState } from 'react';
+import { CalendarDays, MapPin, Clock, Loader2 } from 'lucide-react';
 import { categoryLabels, categoryColors } from '@/data/spots';
+import { Event } from '@/types';
 
 export default function EventosPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/events')
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setEvents(data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -14,6 +25,11 @@ export default function EventosPage() {
         </p>
       </div>
 
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-teal-600 animate-spin" /></div>
+      ) : events.length === 0 ? (
+        <p className="text-center text-gray-400 py-12">Nenhum evento cadastrado</p>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {events.map((event) => (
           <div
@@ -77,6 +93,7 @@ export default function EventosPage() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

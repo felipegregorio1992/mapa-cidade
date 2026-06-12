@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import DataLoader from '@/components/DataLoader';
 
 export const metadata: Metadata = {
   title: 'TurismoEdu Maricá - Turismo Educacional Inteligente',
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="min-h-screen flex flex-col">
+        <DataLoader />
         <Header />
         <main className="flex-1 pt-16">{children}</main>
         <Footer />

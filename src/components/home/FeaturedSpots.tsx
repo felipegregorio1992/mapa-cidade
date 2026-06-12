@@ -3,10 +3,27 @@
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import SpotCard from '@/components/ui/SpotCard';
-import { touristSpots } from '@/data/spots';
+import { useStore } from '@/store/useStore';
 
 export default function FeaturedSpots() {
-  const featured = touristSpots.filter((s) => s.featured && s.status === 'active');
+  const { spots, isLoading } = useStore();
+  const featured = spots.filter((s) => s.featured && s.status === 'active');
+
+  if (isLoading) {
+    return (
+      <section className="py-16 bg-gray-50/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-64 bg-gray-200 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (featured.length === 0) return null;
 
   return (
     <section className="py-16 bg-gray-50/50">
@@ -31,7 +48,7 @@ export default function FeaturedSpots() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {featured.map((spot, index) => (
-            <div key={spot.id} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+            <div key={spot.id || spot._id} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
               <SpotCard spot={spot} />
             </div>
           ))}

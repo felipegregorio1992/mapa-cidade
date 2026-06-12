@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { TouristSpot, Category, ItineraryPreferences } from '@/types';
-import { touristSpots } from '@/data/spots';
 
 interface AppState {
   // Spots
@@ -9,6 +8,7 @@ interface AppState {
   selectedCategory: Category | 'all';
   searchQuery: string;
   selectedSpot: TouristSpot | null;
+  isLoading: boolean;
 
   // User location
   userLocation: { lat: number; lng: number } | null;
@@ -25,6 +25,7 @@ interface AppState {
   generatedItinerary: TouristSpot[];
 
   // Actions
+  fetchSpots: () => Promise<void>;
   setSelectedCategory: (category: Category | 'all') => void;
   setSearchQuery: (query: string) => void;
   setSelectedSpot: (spot: TouristSpot | null) => void;
@@ -37,17 +38,34 @@ interface AppState {
 }
 
 export const useStore = create<AppState>((set, get) => ({
-  spots: touristSpots,
-  filteredSpots: touristSpots.filter((s) => s.status === 'active'),
+  spots: [],
+  filteredSpots: [],
   selectedCategory: 'all',
   searchQuery: '',
   selectedSpot: null,
+  isLoading: true,
   userLocation: null,
   isMobileMenuOpen: false,
   isMapFullscreen: false,
   favorites: [],
   itineraryPreferences: null,
   generatedItinerary: [],
+
+  fetchSpots: async () => {
+    set({ isLoading: true });
+    try {
+      const res = await fetch('/api/spots');
+      if (!res.ok) throw new Error('Falha ao buscar spots');
+      const data = await res.json();
+      const activeSpots = data.filter((s: TouristSpot) => s.status === 'active');
+      set({ spots: data, filteredSpots: activeSpots, isLoading: false });
+    } catch (error) {
+      console.error('Erro ao buscar spots da API:', error);
+      // Em caso de falha de rede, tenta usar dados estáticos como fallback
+      const { touristSpots } = await import('@/data/spots');
+      set({ spots: touristSpots, filteredSpots: touristSpots.filter((s) => s.status === 'active'), isLoading: false });
+    }
+  },
 
   setSelectedCategory: (category) => {
     const { spots, searchQuery } = get();
