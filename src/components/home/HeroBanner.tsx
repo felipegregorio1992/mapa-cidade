@@ -15,9 +15,19 @@ export default function HeroBanner() {
     : '0';
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-800 text-white">
+    <section className="relative overflow-hidden text-white">
+      {/* Background Image */}
+      <div className="absolute inset-0">
+        <img
+          src="https://res.cloudinary.com/dhm0xgko3/image/upload/v1781292061/turismo-marica/tnh8edn6frlf3xlr1keq.png"
+          alt="Vista aérea de Maricá"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-teal-900/80 via-teal-800/60 to-transparent" />
+      </div>
+
       {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10">
+      <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-emerald-300 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-400 rounded-full blur-3xl" />
