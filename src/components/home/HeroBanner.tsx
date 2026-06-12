@@ -13,9 +13,12 @@ export default function HeroBanner() {
 
   useEffect(() => {
     fetch('/api/settings')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) return null;
+        return r.json();
+      })
       .then((data) => {
-        if (data.bannerUrl) setBannerUrl(data.bannerUrl);
+        if (data && data.bannerUrl) setBannerUrl(data.bannerUrl);
       })
       .catch(() => {});
   }, []);
