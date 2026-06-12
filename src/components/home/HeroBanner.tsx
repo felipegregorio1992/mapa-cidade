@@ -1,11 +1,24 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Search, MapPin, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useStore } from '@/store/useStore';
 
+const DEFAULT_BANNER = 'https://res.cloudinary.com/dhm0xgko3/image/upload/v1781292061/turismo-marica/tnh8edn6frlf3xlr1keq.png';
+
 export default function HeroBanner() {
   const { setSearchQuery, spots } = useStore();
+  const [bannerUrl, setBannerUrl] = useState(DEFAULT_BANNER);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.bannerUrl) setBannerUrl(data.bannerUrl);
+      })
+      .catch(() => {});
+  }, []);
 
   const activeSpots = spots.filter((s) => s.status === 'active');
   const totalSpots = activeSpots.length;
@@ -19,7 +32,7 @@ export default function HeroBanner() {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src="https://res.cloudinary.com/dhm0xgko3/image/upload/v1781292061/turismo-marica/tnh8edn6frlf3xlr1keq.png"
+          src={bannerUrl}
           alt="Vista aérea de Maricá"
           className="w-full h-full object-cover"
         />

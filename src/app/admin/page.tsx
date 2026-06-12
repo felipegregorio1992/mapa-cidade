@@ -20,6 +20,7 @@ import {
   Save,
   AlertTriangle,
   Loader2,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { categoryLabels, categoryColors } from '@/data/spots';
 import { Category } from '@/types';
@@ -27,7 +28,7 @@ import { Category } from '@/types';
 const LocationPicker = dynamic(() => import('@/components/map/LocationPicker'), { ssr: false });
 import ImageUploader from '@/components/ui/ImageUploader';
 
-type Tab = 'dashboard' | 'spots' | 'events' | 'pending' | 'users';
+type Tab = 'dashboard' | 'spots' | 'events' | 'pending' | 'users' | 'banners';
 
 interface SpotData {
   _id?: string;
@@ -121,6 +122,7 @@ export default function AdminPage() {
         <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} icon={<Calendar className="w-4 h-4" />} label="Eventos" />
         <TabButton active={activeTab === 'pending'} onClick={() => setActiveTab('pending')} icon={<ClipboardCheck className="w-4 h-4" />} label="Solicitações" />
         <TabButton active={activeTab === 'users'} onClick={() => setActiveTab('users')} icon={<Users className="w-4 h-4" />} label="Usuários" />
+        <TabButton active={activeTab === 'banners'} onClick={() => setActiveTab('banners')} icon={<ImageIcon className="w-4 h-4" />} label="Banners" />
       </div>
 
       {activeTab === 'dashboard' && <DashboardTab />}
@@ -128,6 +130,7 @@ export default function AdminPage() {
       {activeTab === 'events' && <EventsTab />}
       {activeTab === 'pending' && <PendingTab />}
       {activeTab === 'users' && <UsersTab />}
+      {activeTab === 'banners' && <BannersTab />}
     </div>
   );
 }
@@ -766,6 +769,169 @@ function UsersTab() {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ============ BANNERS TAB ============
+function BannersTab() {
+  const [banners, setBanners] = useState<string[]>([]);
+  const [activeBanner, setActiveBanner] = useState('');
+  const [newUrl, setNewUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/admin/settings')
+      .then((r) => r.json())
+      .then((data) => {
+        setBanners(data.banners || []);
+        setActiveBanner(data.bannerUrl || '');
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const saveSettings = async (newBanners: string[], active: string) => {
+    setSaving(true);
+    await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ banners: newBanners, bannerUrl: active }),
+    });
+    setSaving(false);
+  };
+
+  const handleAddUrl = async () => {
+    if (!newUrl.trim()) return;
+    const updated = [...banners, newUrl.trim()];
+    setBanners(updated);
+    if (!activeBanner) setActiveBanner(newUrl.trim());
+    await saveSettings(updated, activeBanner || newUrl.trim());
+    setNewUrl('');
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append('files', files[0]);
+
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.paths && data.paths.length > 0) {
+        const updated = [...banners, data.paths[0]];
+        setBanners(updated);
+        if (!activeBanner) setActiveBanner(data.paths[0]);
+        await saveSettings(updated, activeBanner || data.paths[0]);
+      }
+    } catch {} finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleSetActive = async (url: string) => {
+    setActiveBanner(url);
+    await saveSettings(banners, url);
+  };
+
+  const handleRemove = async (url: string) => {
+    const updated = banners.filter((b) => b !== url);
+    setBanners(updated);
+    const newActive = url === activeBanner ? (updated[0] || '') : activeBanner;
+    setActiveBanner(newActive);
+    await saveSettings(updated, newActive);
+  };
+
+  if (loading) {
+    return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-teal-600 animate-spin" /></div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Add Banner */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <h3 className="font-semibold text-gray-900 mb-4">Adicionar Banner</h3>
+
+        {/* By URL */}
+        <div className="flex gap-3 mb-4">
+          <input
+            type="url"
+            value={newUrl}
+            onChange={(e) => setNewUrl(e.target.value)}
+            placeholder="Cole a URL da imagem (https://...)"
+            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+          <button
+            onClick={handleAddUrl}
+            disabled={!newUrl.trim()}
+            className="px-5 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors"
+          >
+            Adicionar
+          </button>
+        </div>
+
+        {/* By Upload */}
+        <label className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+          {uploading ? 'Enviando...' : 'Fazer Upload'}
+          <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+        </label>
+      </div>
+
+      {/* Active Banner Preview */}
+      {activeBanner && (
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="font-semibold text-gray-900 mb-3">Banner Ativo</h3>
+          <div className="rounded-xl overflow-hidden border border-gray-200 aspect-[3/1]">
+            <img src={activeBanner} alt="Banner ativo" className="w-full h-full object-cover" />
+          </div>
+        </div>
+      )}
+
+      {/* All Banners */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <h3 className="font-semibold text-gray-900 mb-4">Todos os Banners ({banners.length})</h3>
+        {banners.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-8">Nenhum banner cadastrado</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {banners.map((url, index) => (
+              <div key={index} className={`relative group rounded-xl overflow-hidden border-2 ${url === activeBanner ? 'border-teal-500' : 'border-gray-200'}`}>
+                <div className="aspect-[3/1]">
+                  <img src={url} alt={`Banner ${index + 1}`} className="w-full h-full object-cover" />
+                </div>
+                {url === activeBanner && (
+                  <div className="absolute top-2 left-2 px-2 py-0.5 bg-teal-600 text-white text-xs font-medium rounded-full">
+                    Ativo
+                  </div>
+                )}
+                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {url !== activeBanner && (
+                    <button
+                      onClick={() => handleSetActive(url)}
+                      className="px-2 py-1 bg-teal-600 text-white text-xs rounded-lg hover:bg-teal-700"
+                    >
+                      Ativar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleRemove(url)}
+                    className="px-2 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700"
+                  >
+                    Remover
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
