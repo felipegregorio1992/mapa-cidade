@@ -8,7 +8,6 @@ import {
   Globe,
   Star,
   Heart,
-  Share2,
   Navigation,
   Calendar,
   ArrowLeft,
@@ -19,6 +18,8 @@ import dynamic from 'next/dynamic';
 import { categoryLabels, categoryColors } from '@/data/spots';
 import { useStore } from '@/store/useStore';
 import { TouristSpot } from '@/types';
+import ReviewSection from '@/components/ui/ReviewSection';
+import ShareButton from '@/components/ui/ShareButton';
 
 const MapView = dynamic(() => import('@/components/map/MapView'), { ssr: false });
 
@@ -129,12 +130,7 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
               >
                 <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
               </button>
-              <button
-                className="p-2.5 rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-teal-600 transition-colors"
-                aria-label="Compartilhar"
-              >
-                <Share2 className="w-5 h-5" />
-              </button>
+              <ShareButton title={spot.name} />
             </div>
           </div>
 
@@ -184,6 +180,9 @@ export default function LocalPage({ params }: { params: Promise<{ id: string }> 
               Abrir rota no Google Maps
             </a>
           </div>
+
+          {/* Reviews */}
+          <ReviewSection spotId={id} />
         </div>
 
         {/* Sidebar */}

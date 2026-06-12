@@ -3,10 +3,11 @@
 import { Search } from 'lucide-react';
 import SpotCard from '@/components/ui/SpotCard';
 import CategoryFilter from '@/components/ui/CategoryFilter';
+import { SpotGridSkeleton } from '@/components/ui/Skeleton';
 import { useStore } from '@/store/useStore';
 
 export default function ExplorarPage() {
-  const { filteredSpots, searchQuery, setSearchQuery } = useStore();
+  const { filteredSpots, searchQuery, setSearchQuery, isLoading } = useStore();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -42,7 +43,9 @@ export default function ExplorarPage() {
         </p>
       </div>
 
-      {filteredSpots.length > 0 ? (
+      {isLoading ? (
+        <SpotGridSkeleton />
+      ) : filteredSpots.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filteredSpots.map((spot) => (
             <SpotCard key={spot.id} spot={spot} />

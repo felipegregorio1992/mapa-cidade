@@ -2,17 +2,29 @@ import clientPromise from '@/lib/mongodb';
 import { signToken } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { loginSchema } from '@/lib/validations';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
-
-    if (!email || !password) {
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    if (!rateLimit(ip, 5, 60000)) {
       return NextResponse.json(
-        { error: 'Email e senha são obrigatórios' },
+        { error: 'Muitas tentativas. Aguarde 1 minuto.' },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json();
+    const parsed = loginSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0].message },
         { status: 400 }
       );
     }
+
+    const { email, password } = parsed.data;
 
     const client = await clientPromise;
     const db = client.db('turismo-marica');

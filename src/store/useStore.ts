@@ -57,11 +57,12 @@ export const useStore = create<AppState>((set, get) => ({
       const res = await fetch('/api/spots');
       if (!res.ok) throw new Error('Falha ao buscar spots');
       const data = await res.json();
-      const activeSpots = data.filter((s: TouristSpot) => s.status === 'active');
-      set({ spots: data, filteredSpots: activeSpots, isLoading: false });
+      // API retorna { spots, pagination } ou array direto (fallback)
+      const spotsArray = Array.isArray(data) ? data : (data.spots || []);
+      const activeSpots = spotsArray.filter((s: TouristSpot) => s.status === 'active');
+      set({ spots: spotsArray, filteredSpots: activeSpots, isLoading: false });
     } catch (error) {
       console.error('Erro ao buscar spots da API:', error);
-      // Em caso de falha de rede, tenta usar dados estáticos como fallback
       const { touristSpots } = await import('@/data/spots');
       set({ spots: touristSpots, filteredSpots: touristSpots.filter((s) => s.status === 'active'), isLoading: false });
     }

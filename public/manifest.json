@@ -1,0 +1,17 @@
+{
+  "name": "TurismoEdu Maricá",
+  "short_name": "TurismoEdu",
+  "description": "Plataforma de turismo educacional de Maricá, RJ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d9488",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
