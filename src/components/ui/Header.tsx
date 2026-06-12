@@ -22,7 +22,7 @@ export default function Header() {
 
   useEffect(() => {
     // Verifica se o usuário está logado
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { credentials: 'include' })
       .then((res) => {
         if (res.ok) return res.json();
         return null;

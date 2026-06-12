@@ -47,8 +47,7 @@ export default function RegistroPage() {
       }
 
       // Redireciona após registro bem-sucedido
-      router.push('/');
-      router.refresh();
+      window.location.href = '/';
     } catch {
       setError('Erro de conexão. Tente novamente.');
       setLoading(false);

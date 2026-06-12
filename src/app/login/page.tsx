@@ -35,11 +35,10 @@ export default function LoginPage() {
 
       // Redireciona admin para /admin, outros para home
       if (data.user?.role === 'admin' || data.user?.role === 'moderator') {
-        router.push('/admin');
+        window.location.href = '/admin';
       } else {
-        router.push('/');
+        window.location.href = '/';
       }
-      router.refresh();
     } catch {
       setError('Erro de conexão. Tente novamente.');
       setLoading(false);
