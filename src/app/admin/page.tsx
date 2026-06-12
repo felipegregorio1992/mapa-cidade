@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {
   LayoutDashboard,
@@ -77,13 +76,12 @@ interface UserData {
 }
 
 export default function AdminPage() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { credentials: 'same-origin' })
       .then((res) => {
         if (!res.ok) throw new Error();
         return res.json();
@@ -92,12 +90,12 @@ export default function AdminPage() {
         if (data.user?.role === 'admin' || data.user?.role === 'moderator') {
           setAuthorized(true);
         } else {
-          router.push('/login');
+          window.location.href = '/login';
         }
       })
-      .catch(() => router.push('/login'))
+      .catch(() => { window.location.href = '/login'; })
       .finally(() => setLoading(false));
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (

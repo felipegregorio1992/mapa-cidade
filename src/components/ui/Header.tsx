@@ -1,40 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X, MapPin, Search, Heart, User, Compass, LogIn, LogOut } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-
-interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Header() {
   const { isMobileMenuOpen, toggleMobileMenu, favorites } = useStore();
+  const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-
-  useEffect(() => {
-    // Verifica se o usuário está logado
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then((res) => {
-        if (res.ok) return res.json();
-        return null;
-      })
-      .then((data) => {
-        if (data?.user) setUser(data.user);
-      })
-      .catch(() => {});
-  }, []);
-
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.replace('/');
-  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
@@ -52,34 +28,19 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link
-              href="/"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
-            >
+            <Link href="/" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors">
               Início
             </Link>
-            <Link
-              href="/explorar"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
-            >
+            <Link href="/explorar" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors">
               Explorar
             </Link>
-            <Link
-              href="/mapa"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
-            >
+            <Link href="/mapa" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors">
               Mapa
             </Link>
-            <Link
-              href="/roteiro"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
-            >
+            <Link href="/roteiro" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors">
               Roteiro IA
             </Link>
-            <Link
-              href="/eventos"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors"
-            >
+            <Link href="/eventos" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors">
               Eventos
             </Link>
           </nav>
@@ -123,7 +84,7 @@ export default function Header() {
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-2 animate-fade-in">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-2 z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
                       <p className="text-xs text-gray-400">{user.email}</p>
@@ -147,7 +108,7 @@ export default function Header() {
                       Meus Favoritos
                     </Link>
                     <button
-                      onClick={handleLogout}
+                      onClick={logout}
                       className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                       <LogOut className="w-4 h-4" />
@@ -179,7 +140,7 @@ export default function Header() {
 
         {/* Search Bar */}
         {searchOpen && (
-          <div className="pb-4 animate-fade-in">
+          <div className="pb-4">
             <SearchBar onClose={() => setSearchOpen(false)} />
           </div>
         )}
@@ -187,7 +148,7 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 animate-fade-in">
+        <div className="md:hidden bg-white border-t border-gray-100">
           <nav className="px-4 py-3 space-y-1">
             <MobileNavLink href="/" icon={<Compass className="w-4 h-4" />} label="Início" />
             <MobileNavLink href="/explorar" icon={<Search className="w-4 h-4" />} label="Explorar" />
@@ -200,7 +161,7 @@ export default function Header() {
                   <MobileNavLink href="/admin" icon={<User className="w-4 h-4" />} label="Admin" />
                 )}
                 <button
-                  onClick={handleLogout}
+                  onClick={logout}
                   className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
