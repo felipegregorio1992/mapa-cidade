@@ -33,8 +33,12 @@ export default function LoginPage() {
         return;
       }
 
-      // Redireciona após login bem-sucedido
-      router.push('/');
+      // Redireciona admin para /admin, outros para home
+      if (data.user?.role === 'admin' || data.user?.role === 'moderator') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
       router.refresh();
     } catch {
       setError('Erro de conexão. Tente novamente.');
