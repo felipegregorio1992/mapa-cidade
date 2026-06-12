@@ -48,7 +48,7 @@ export default function FeaturedSpots() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {featured.map((spot, index) => (
-            <div key={spot.id || spot._id} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+            <div key={spot.id || (spot as unknown as { _id: string })._id} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
               <SpotCard spot={spot} />
             </div>
           ))}
